@@ -6,12 +6,12 @@
  * and open the template in the editor.
  */
 
-class Model_movement extends CI_Model {
+class Model_message extends CI_Model {
 
-    var $TABLE_MOVEMENT = "movement";
-    var $COLUMN_ID = "mov_id";
-    var $COLUMN_TIME = "mov_time";
-    var $COLUMN_MESSAGE = "mov_message";
+    var $TABLE_MESSAGE = "message";
+    var $COLUMN_ID = "id";
+    var $COLUMN_TIME = "time";
+    var $COLUMN_TEXT = "text";
 
     function __construct()
     {
@@ -24,8 +24,8 @@ class Model_movement extends CI_Model {
 
     function getAllMovements()
     {
-        $this->db->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME . " , " . $this->COLUMN_MESSAGE);
-        $this->db->from($this->TABLE_MOVEMENT);
+        $this->db->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME . " , " . $this->COLUMN_TEXT);
+        $this->db->from($this->TABLE_MESSAGE);
         $this->db->order_by($this->COLUMN_TIME, "desc");
 
         $query = $this->db->get();
@@ -35,8 +35,8 @@ class Model_movement extends CI_Model {
 
     function addMovement($message)
     {
-        $data = array($this->COLUMN_TIME => date('Y-m-d H:i:s'), $this->COLUMN_MESSAGE => $message);
-        $this->db->insert($this->TABLE_MOVEMENT, $data);
+        $data = array($this->COLUMN_TIME => date('Y-m-d H:i:s'), $this->COLUMN_TEXT => $message);
+        $this->db->insert($this->TABLE_MESSAGE, $data);
 
         if ($this->db->affected_rows() > 0) {
 
@@ -44,8 +44,8 @@ class Model_movement extends CI_Model {
             $insert_id = $this->db->insert_id();
 
             $this->db->where($this->COLUMN_ID, $insert_id)
-                    ->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME)
-                    ->from($this->TABLE_MOVEMENT);
+                    ->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME. " , " . $this->COLUMN_TEXT)
+                    ->from($this->TABLE_MESSAGE);
 
             $last_insert_query = $this->db->get();
             return $last_insert_query->result();

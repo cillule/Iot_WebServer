@@ -17,8 +17,9 @@ require APPPATH . '/libraries/PHPSerial.php';
  * @license         MIT
  * @link            https://github.com/chriskacerguis/codeigniter-restserver
  */
-class Example extends REST_Controller {
+class Message_Controller extends REST_Controller {
 
+    //Define class variable for serial Port
     var $COM_PORT = "COM4";
 
     function __construct()
@@ -28,21 +29,19 @@ class Example extends REST_Controller {
 
         // Configure limits on our controller methods
         // Ensure you have created the 'limits' table and enabled 'limits' within application/config/rest.php
-        $this->methods['movement_get']['limit'] = 500; // 500 requests per hour per user/key
-        $this->methods['movement_get']['limit'] = 500; // 500 requests per hour per user/key
-        $this->methods['movement_post']['limit'] = 100; // 100 requests per hour per user/key
-        $this->methods['movement_delete']['limit'] = 50; // 50 requests per hour per user/key
+        $this->methods['message_get']['limit'] = 500; // 500 requests per hour per user/key
+        $this->methods['message_post']['limit'] = 100; // 100 requests per hour per user/key
+        $this->methods['message_delete']['limit'] = 50; // 50 requests per hour per user/key
     }
 
-    public function movements_get()
+    public function messages_get()
     {
-        $movements = $this->Movement->getAllMovements();
-
+        //use model for execute database query
+        $movements = $this->MessageModel->getAllMovements();
 
         if ($movements) {
             // Set the response and exit
             $this->response($movements, REST_Controller::HTTP_OK); // OK (200) being the HTTP response code
-            //send to arduino 
         } else {
             // Set the response and exit
             $this->response([
@@ -52,26 +51,34 @@ class Example extends REST_Controller {
         }
     }
 
-    public function movement_post()
+    public function message_post()
     {
-
+        //get message from parameters
         $message = $this->post('message');
 
-        var_dump($message);
+        //check if message isn't empty
 
-        $new_movement = $this->Movement->addMovement($message);
+        if (trim($message) == "") {
+            $this->response([
+                'status' => FALSE,
+                'message' => 'Message text cannot be empty'
+                    ], REST_Controller::HTTP_BAD_REQUEST);
+        }
+
+        //use model function for save message into database
+        $new_movement = $this->MessageModel->addMovement($message);
 
         if ($new_movement) {
 
+            //TODO: Check if serial port is available
+            
+            //try to write into Arduino Serial Port
             $serial = new PhpSerial;
 
-// First we must specify the device. This works on both linux and windows (if
-// your linux serial device is /dev/ttyS0 for COM1, etc)
-
-          /*  var_dump($this->COM_PORT);
+            var_dump($this->COM_PORT);
             $serial->deviceSet($this->COM_PORT);
 
-// We can change the baud rate, parity, length, stop bits, flow control
+            // We can change the baud rate, parity, length, stop bits, flow control
             $serial->confBaudRate(9600);
             $serial->confParity("none");
             $serial->confCharacterLength(8);
@@ -82,11 +89,10 @@ class Example extends REST_Controller {
 
             sleep(3);
 
-            // To write into
-            $serial->sendMessage($message);*/
+            // To write into serial port
+            $serial->sendMessage($message);
 
-
-            $this->set_response($new_movement, REST_Controller::HTTP_CREATED); // CREATED (201) being the HTTP response code
+            $this->response($new_movement, REST_Controller::HTTP_CREATED); // CREATED (201) being the HTTP response code
         } else {
             $this->response([
                 'status' => FALSE,
