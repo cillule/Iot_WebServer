@@ -66,33 +66,45 @@ class Message_Controller extends REST_Controller {
         }
 
         //use model function for save message into database
-        $new_movement = $this->MessageModel->addMovement($message);
+        $new_message = $this->MessageModel->addMovement($message);
 
-        if ($new_movement) {
+        if ($new_message) {
 
             //TODO: Check if serial port is available
-            
             //try to write into Arduino Serial Port
             $serial = new PhpSerial;
 
-            var_dump($this->COM_PORT);
-            $serial->deviceSet($this->COM_PORT);
+            //check if serial is available
+            if ($serial->deviceSet($this->COM_PORT)) {
 
-            // We can change the baud rate, parity, length, stop bits, flow control
-            $serial->confBaudRate(9600);
-            $serial->confParity("none");
-            $serial->confCharacterLength(8);
-            $serial->confStopBits(1);
-            $serial->confFlowControl("none");
+                // We can change the baud rate, parity, length, stop bits, flow control
+                $serial->confBaudRate(9600);
+                $serial->confParity("none");
+                $serial->confCharacterLength(8);
+                $serial->confStopBits(1);
+                $serial->confFlowControl("none");
+                $serial->deviceOpen();
 
-            $serial->deviceOpen();
+                sleep(2);
 
-            sleep(3);
+                // To write into serial port
+                $serial->sendMessage($message);
 
-            // To write into serial port
-            $serial->sendMessage($message);
+                $message_status = [
+                    'status' => TRUE,
+                    'message' => 'Message send to Arduino with success',
+                    'created' => $new_message
+                ];
+            } else {
 
-            $this->response($new_movement, REST_Controller::HTTP_CREATED); // CREATED (201) being the HTTP response code
+                $message_status = [
+                    'status' => FALSE,
+                    'message' => 'Message can\'t be send to Arduino',
+                    'created' => $new_message
+                ];
+            }
+
+            $this->response($message_status, REST_Controller::HTTP_CREATED); // CREATED (201) being the HTTP response code
         } else {
             $this->response([
                 'status' => FALSE,
