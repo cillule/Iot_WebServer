@@ -37,7 +37,7 @@ class Message_Controller extends REST_Controller {
     public function messages_get()
     {
         //use model for execute database query
-        $movements = $this->MessageModel->getAllMovements();
+        $movements = $this->MessageModel->getAllMessages();
 
         if ($movements) {
             // Set the response and exit
@@ -46,18 +46,17 @@ class Message_Controller extends REST_Controller {
             // Set the response and exit
             $this->response([
                 'status' => FALSE,
-                'message' => 'No movements were found'
+                'message' => 'No message were found'
                     ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
         }
     }
 
     public function message_post()
     {
-        //get message from parameters
+        //get message from JSON parameters
         $message = $this->post('message');
 
         //check if message isn't empty
-
         if (trim($message) == "") {
             $this->response([
                 'status' => FALSE,
@@ -66,11 +65,9 @@ class Message_Controller extends REST_Controller {
         }
 
         //use model function for save message into database
-        $new_message = $this->MessageModel->addMovement($message);
+        $new_message = $this->MessageModel->addMessage($message);
 
         if ($new_message) {
-
-            //TODO: Check if serial port is available
             //try to write into Arduino Serial Port
             $serial = new PhpSerial;
 

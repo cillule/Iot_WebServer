@@ -22,7 +22,7 @@ class Model_message extends CI_Model {
         $this->load->database();
     }
 
-    function getAllMovements()
+    function getAllMessages()
     {
         $this->db->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME . " , " . $this->COLUMN_TEXT);
         $this->db->from($this->TABLE_MESSAGE);
@@ -33,7 +33,7 @@ class Model_message extends CI_Model {
         return $query->result();
     }
 
-    function addMovement($message)
+    function addMessage($message)
     {
         $data = array($this->COLUMN_TIME => date('Y-m-d H:i:s'), $this->COLUMN_TEXT => $message);
         $this->db->insert($this->TABLE_MESSAGE, $data);
@@ -44,7 +44,7 @@ class Model_message extends CI_Model {
             $insert_id = $this->db->insert_id();
 
             $this->db->where($this->COLUMN_ID, $insert_id)
-                    ->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME. " , " . $this->COLUMN_TEXT)
+                    ->select($this->COLUMN_ID . " , " . $this->COLUMN_TIME . " , " . $this->COLUMN_TEXT)
                     ->from($this->TABLE_MESSAGE);
 
             $last_insert_query = $this->db->get();
